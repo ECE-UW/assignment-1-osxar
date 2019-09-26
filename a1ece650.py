@@ -31,7 +31,7 @@ def validate(text):
         if (case1=='' and code[2]==''):
             return True
         else:
-            sys.stderr.write("Error: Invalid Street Name for 'r'\n")
+            sys.stderr.write("Error: Invalid Command for 'r'\n")
             return False
     else:
 
@@ -101,12 +101,16 @@ def validate(text):
 def operations(text):
     code = text.split('"')
 
+
     if code[0] == 'a ':
+        Check=code[1]
+        quickCheck=Check.replace(" ","")
+        if quickCheck=='':
+            sys.stderr.write("Error: Street Name cannot contain only white spaces or have no name.\n")
+            return False
         val = streets_and_cordinates.get(code[1].lower(),'Not Found')
         if val == 'Not Found':
             streets_and_cordinates.update({code[1].lower():code[2]})
-            print("Output: ")
-            print(streets_and_cordinates)
         else:
             sys.stderr.write("Error: Street Name Exist for command 'a'.\n")
     elif code[0] == 'c ':
@@ -115,16 +119,12 @@ def operations(text):
             sys.stderr.write("Error: Street Name doesn't exist for 'c' command.\n")
         else:
             streets_and_cordinates.update({code[1].lower():code[2]})
-            print("Output: ")
-            print(streets_and_cordinates)
     elif code[0] == 'r ':
         val = streets_and_cordinates.get(code[1].lower(),'Not Found')
         if val == 'Not Found':
             sys.stderr.write("Error: Street Name doesn't exist. Specify valid street for 'r'.\n")
         else:
             streets_and_cordinates.pop(code[1].lower())
-            print("Output: ")
-            print(streets_and_cordinates)
     elif code[0] == 'g':
         generate()
     else:
@@ -159,27 +159,21 @@ def generate():
                     analytics(value1,value2)
 
     matrix()
-    #print("Vertex: ")
-    #print(main_V)
-    #print("MIDPOINT: ")
-    #print(mid_point)
-    #print("Edges: ")
-    #print(temp_allEdges)
-    #print('Number: ')
-    #print(len(temp_allEdges))
-    #print('temp_Edges: ')
-    #print(temp_Edges)
-    #print('Total temp_Edges: ')
-    #print(len(temp_Edges))
-    #print('Total temp_Blindspot: ')
-    #print(temp_Blindspot)
-    #print("'\n'")
-    sys.stdout.write("V: ")
-    sys.stdout.write(str(vertex))
+    sys.stdout.write("V = {")
+    sys.stdout.write("\n")
+    for kk , vv in vertex.items():
+        sys.stdout.write("  {}:  {}".format(kk,vv))
+        sys.stdout.write("\n")
+    sys.stdout.write("}")
     sys.stdout.write("\n")
     sys.stdout.write("\n")
-    sys.stdout.write("E: ")
-    sys.stdout.write(str(list(Edges)))
+    sys.stdout.write("E = {")
+    sys.stdout.write("\n")
+    hh = list(Edges)
+    for pp in hh:
+        sys.stdout.write("  {},".format(pp))
+        sys.stdout.write("\n")
+    sys.stdout.write("}")
     sys.stdout.write("\n")
 
 
@@ -421,8 +415,7 @@ def middle(val1):
 def main():
 
     while True:
-        print('Input Valid Command: ')
-        command = raw_input() #raw_input()  #str(sys.stdin.readline())
+        command = raw_input()
         if command == '':
             break
 
