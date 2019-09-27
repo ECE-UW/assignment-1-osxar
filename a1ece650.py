@@ -75,7 +75,7 @@ def validate(text):
             sys.stderr.write("Error: Wrong coordinate sequence\n")
             return False
         else:
-            third = re.sub("([(][0-9(-.+)]+[,][0-9(-.+)]+[)])","",line)
+            third = re.sub("([(][0-9(-.+)\s*]+[,][0-9(-.+)\s*]+[)])","",line)
             if third ==" ":
                 validate+=1
             else:
@@ -208,6 +208,7 @@ def structure_cordinates(value):
     hold2=""
     start=False
     newVal=False
+    count=0
     temp=value.replace(" ","")
 
     for i in range (len(temp)):
@@ -217,6 +218,7 @@ def structure_cordinates(value):
 
         if temp[i] == ",":
             newVal=True
+            count+=1
 
         if (start and newVal == False and temp[i] != "(" and temp[i] != ","and temp[i] != ")"):
             hold1 += temp[i]
@@ -231,6 +233,9 @@ def structure_cordinates(value):
             cold.append(points)
             hold1=""
             hold2=""
+            if count>=2:
+                exp=int("--y9#")
+            count=0
 
     return cold
 
@@ -348,8 +353,9 @@ def unique_ID():
             if winter2 == mate1:
                 final2=key1
                 break
-        xxx = "<{},{}>".format(final1,final2)
-        Edges.add(xxx)
+        if final1 != final2:
+            xxx = "<{},{}>".format(final1,final2)
+            Edges.add(xxx)
 
 
 
