@@ -20,11 +20,12 @@ def validate(text):
     validate=0
 
     code = text.split('"')
+    check=code[0].replace(" ","")
 
     if (code[0] == 'g' and len(code)==1):
         return True
 
-    if (code[0]=='r ' and len(code)==3):
+    if (check=='r' and len(code)==3):
         fake=code[1]
         bunny=fake.replace(" ","")
         case1 = re.sub("[a-zA-Z]+","",bunny)
@@ -42,16 +43,12 @@ def validate(text):
 
 
         if code[0]!='g':
-            if len(code[0])!=2:
-                sys.stderr.write("Error: Wrong Action command\n")
-                return False
+            first=re.compile(r"^[ac]\s+")
+            if first.match(code[0]):
+               validate +=1
             else:
-                first=re.compile(r"^[ac]\s")
-                if first.match(code[0]):
-                    validate +=1
-                else:
-                    sys.stderr.write("Error: Wrong Action command\n")
-                    return False
+               sys.stderr.write("Error: Wrong Action command\n")
+               return False
 
 
         second=code[1]
@@ -76,7 +73,8 @@ def validate(text):
             return False
         else:
             third = re.sub("([(][0-9(-.+)\s*]+[,][0-9(-.+)\s*]+[)])","",line)
-            if third ==" ":
+            fin=third.replace(" ","")
+            if fin =="":
                 validate+=1
             else:
                 sys.stderr.write("Error: Wrong coordinate sequence\n")
@@ -87,7 +85,7 @@ def validate(text):
         return False
     else:
         lastcheck=structure_cordinates(code[2])
-        if ( (code[0]=="a " or code[0]=="c ") and len(lastcheck)>=2):
+        if (  len(lastcheck)>=2):
             return True
         else:
             sys.stderr.write("Error: Coordinate is incomplete or not provided\n")
@@ -100,9 +98,10 @@ def validate(text):
 
 def operations(text):
     code = text.split('"')
+    check=code[0].replace(" ","")
 
 
-    if code[0] == 'a ':
+    if check == 'a':
         Check=code[1]
         quickCheck=Check.replace(" ","")
         if quickCheck=='':
@@ -113,19 +112,19 @@ def operations(text):
             streets_and_cordinates.update({code[1].lower():code[2]})
         else:
             sys.stderr.write("Error: Street Name Exist for command 'a'.\n")
-    elif code[0] == 'c ':
+    elif check == 'c':
         val = streets_and_cordinates.get(code[1].lower(),'Not Found')
         if val == 'Not Found':
             sys.stderr.write("Error: Street Name doesn't exist for 'c' command.\n")
         else:
             streets_and_cordinates.update({code[1].lower():code[2]})
-    elif code[0] == 'r ':
+    elif check == 'r':
         val = streets_and_cordinates.get(code[1].lower(),'Not Found')
         if val == 'Not Found':
             sys.stderr.write("Error: Street Name doesn't exist. Specify valid street for 'r'.\n")
         else:
             streets_and_cordinates.pop(code[1].lower())
-    elif code[0] == 'g':
+    elif check == 'g':
         generate()
     else:
         sys.stderr.write("Error: wrong command\n")
@@ -162,7 +161,7 @@ def generate():
     sys.stdout.write("V = {")
     sys.stdout.write("\n")
     for kk , vv in vertex.items():
-        sys.stdout.write("  {}:  {}".format(kk,vv))
+        sys.stdout.write("  {}:  ({:.2f},{:.2f})".format(kk,vv[0],vv[1]))
         sys.stdout.write("\n")
     sys.stdout.write("}")
     sys.stdout.write("\n")
@@ -255,9 +254,9 @@ def intersect(valA,valB,valC,valD):
     d2 = (valC[0] * valD[1])-(valC[1] * valD[0])
     d = (d1,d2)
     x1 = (d[0] * xdiff[1])-( d[1] * xdiff[0])
-    x = round((x1 / div),7)
+    x = round((x1 / div),4)
     y1 = (d[0] * ydiff[1])-(d[1] * ydiff[0])
-    y = round((y1 / div),7)
+    y = round((y1 / div),4)
 
     vector1= round((math.sqrt((valA[0]*valA[0])+(valA[1]*valA[1]))),7)
     vector2= round((math.sqrt((valB[0]*valB[0])+(valB[1]*valB[1]))),7)
@@ -269,7 +268,7 @@ def intersect(valA,valB,valC,valD):
     maximumA= max(vector1a,vector2a)
     minimumA= min(vector1a,vector2a)
 
-    if (vectorx>=minimum and vectorx<=maximum and vectorx>=minimumA and vectorx<=maximumA):
+    if (x>=min(valA[0],valB[0]) and x<=max(valA[0],valB[0]) and y>=min(valA[1],valB[1]) and y<=max(valA[1],valB[1]) and x>=min(valC[0],valD[0]) and x<=max(valC[0],valD[0]) and y>=min(valC[1],valD[1]) and y<=max(valC[1],valD[1]) ):
         # Lines intersect
         return x,y
     else:
@@ -300,10 +299,13 @@ def store_values(ans,valA,valB,valC,valD):
 def matrix():
     validate=True
     edge=list(temp_allEdges)
+    edge2=list(temp_allEdges)
 
     for indx in range(len(temp_allEdges)):
         edge_set=edge[indx]
+        edge_set2=edge2[indx]
         validate=True
+        funke=[]
         for key1, value1 in streets_and_cordinates.items():
             org_street=structure_cordinates(value1)
             numC=0
@@ -311,11 +313,24 @@ def matrix():
             for step in range(len(org_street)-1):
                 middle_point=middle(edge_set)
                 meeting_point=intersect(edge_set[0],edge_set[1],org_street[numC],org_street[numD])
+                meeting_point2=intersect(edge_set[0],edge_set[1],org_street[numC],org_street[numD])
+                last=cord(middle_point,edge_set)
+                e1=edge_set2[0]
+                e2=edge_set2[1]
+                node=(round(e1[0],2),round(e1[1],2))
+                funke.append(node)
+                node2=(round(e2[0],2),round(e2[1],2))
+                funke.append(node2)
+                if meeting_point2 != 0:
+                    mid=(round(meeting_point2[0],2),round(meeting_point2[1],2))
+                else:
+                    mid=0
                 if meeting_point != 0:
-                    if meeting_point not in edge_set:
-                        validate=False
-                        coords=tuple([middle_point,meeting_point])
-                        check_BlindSpot_Duplicate(middle_point,meeting_point)
+                    if mid not in funke:
+                        if (last !=org_street[numC] and last !=org_street[numD] ):
+                            validate=False
+                            coords=tuple([middle_point,meeting_point])
+                            check_BlindSpot_Duplicate(middle_point,meeting_point)
                 numC+=1
                 numD+=1
         if validate == True:
@@ -330,6 +345,7 @@ def unique_ID():
     id=0
     main=list(main_V)
     keep=list(temp_Edges)
+    tempE=[]
 
     for indx in range(len(main_V)):
         id += 1
@@ -353,9 +369,22 @@ def unique_ID():
             if winter2 == mate1:
                 final2=key1
                 break
+        total_length=len(Edges)
         if final1 != final2:
-            xxx = "<{},{}>".format(final1,final2)
-            Edges.add(xxx)
+            if total_length==0:
+                xxx = "<{},{}>".format(final1,final2)
+                Edges.add(xxx)
+                tempE.append((final1,final2))
+            else:
+                enter=True
+                for ea in tempE:
+                    if final1 == ea[0] or final1 ==ea[1]:
+                        if final2 == ea[0] or final2 ==ea[1]:
+                            enter=False
+                if enter:
+                    xxx = "<{},{}>".format(final1,final2)
+                    Edges.add(xxx)
+                    tempE.append((final1,final2))
 
 
 
@@ -367,10 +396,10 @@ def check_BlindSpot_Duplicate(value1,value2):
             bp_set=bp[indx]
             bp_setA=bp_set[0]
             bp_setB=bp_set[1]
-            vector1= round((math.sqrt((bp_setA[0]**2)+(bp_setA[1]**2))),7)
-            vector2= round((math.sqrt((bp_setB[0]**2)+(bp_setB[1]**2))),7)
-            vector1a= round((math.sqrt((value1[0]**2)+(value1[1]**2))),7)
-            vector2a= round((math.sqrt((value2[0]**2)+(value2[1]**2))),7)
+            vector1= round((math.sqrt((bp_setA[0]**2)+(bp_setA[1]**2))),4)
+            vector2= round((math.sqrt((bp_setB[0]**2)+(bp_setB[1]**2))),4)
+            vector1a= round((math.sqrt((value1[0]**2)+(value1[1]**2))),4)
+            vector2a= round((math.sqrt((value2[0]**2)+(value2[1]**2))),4)
             maximum= max(vector1,vector2)
             minimum= min(vector1,vector2)
             maximumA= max(vector1a,vector2a)
@@ -402,9 +431,31 @@ def checkBlindSpots():
             for step in range(len(org_street)-1):
                 middle_point=middle(edge_set)
                 meeting_point=intersect(edge_set[0],edge_set[1],org_street[numC],org_street[numD])
+                last=cord(middle_point,edge_set)
+                m1=grad(edge_set[0],edge_set[1])
+                m2=grad(org_street[numC],org_street[numD])
                 if meeting_point != 0:
                     if meeting_point not in edge_set:
-                        validate=False
+                        if (last !=org_street[numC] and last !=org_street[numD] ):
+                            if(m1==0 and m2==0):
+                                e1=edge_set[0]
+                                e2=edge_set[1]
+                                s1=org_street[numC]
+                                s2=org_street[numD]
+                                if (e1[0]-e2[0]==0 and s1[0]-s2[0]==0) or (e1[1]-e2[1]==0 and s1[1]-s2[1]==0):
+                                    pass
+                                else:
+                                    validate=False
+                            elif((m1==0 and m2!=0) or (m2==0 and m1 !=0)):
+                                validate=False
+                            elif ((m1>0 and m2<0) or (m1<0 and m2 >0)):
+                                validate=False
+                            else:
+                                numerator=abs(abs(m1)-abs(m2))
+                                denominator=max(abs(m1),abs(m2))
+                                deviation= (numerator/denominator)*100
+                                if(deviation>=3):
+                                    validate=False
                 numC+=1
                 numD+=1
         if validate == True:
@@ -417,6 +468,20 @@ def middle(val1):
         if mid_p[index] in val1:
             return mid_p[index]
 
+def cord(middle,edge):
+        if middle == edge[0]:
+            return edge[1]
+        if middle == edge[1]:
+            return edge[0]
+
+def grad(val1,val2):
+    x=round((val1[0]-val2[0]),4)
+    y=round((val1[1]-val2[1]),4)
+
+    if x==0 or y==0:
+        return 0
+    else:
+        return round(y/x,2)
 
 def main():
 
@@ -439,5 +504,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-
+    try:
+        main()
+    except EOFError:
+        sys.stderr.write("Safe exit\n")
+        #try:
+            #sys.exit(0)
+        #except EOFError:
+            #sys.stderr.write("Safe exit")
