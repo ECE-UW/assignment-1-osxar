@@ -169,9 +169,12 @@ def generate():
     sys.stdout.write("E = {")
     sys.stdout.write("\n")
     hh = list(Edges)
-    for pp in hh:
-        sys.stdout.write("  {},".format(pp))
+    for i in range (0,len(hh)-1):
+        sys.stdout.write("  {},".format(hh[i]))
         sys.stdout.write("\n")
+    if len(hh) != 0:
+      sys.stdout.write("  {}".format(hh[len(hh)-1]))
+      sys.stdout.write("\n")
     sys.stdout.write("}")
     sys.stdout.write("\n")
 
@@ -507,8 +510,5 @@ if __name__ == '__main__':
     try:
         main()
     except EOFError:
-        sys.stderr.write("Safe exit\n")
-        #try:
-            #sys.exit(0)
-        #except EOFError:
-            #sys.stderr.write("Safe exit")
+        pass
+
